@@ -94,10 +94,21 @@ const DEFAULT=[
   {id:'ambiental',label:'Ambiental',color:'slate',items:[{id:'a1',label:'Aseo',done:true},{id:'a2',label:'Closet',done:true},{id:'i1',label:'Curso programación',done:true},{id:'i2',label:'Licencia',done:false},{id:'i3',label:'Trabajo',done:false}]},
 ];
 
+const DB_URL='https://salud-seb-default-rtdb.firebaseio.com';
+
 let sections;
 let toastTimer=null;
 function load(){try{const r=localStorage.getItem(KEY);sections=r?JSON.parse(r):JSON.parse(JSON.stringify(DEFAULT));}catch(e){sections=JSON.parse(JSON.stringify(DEFAULT));}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(sections));}catch(e){}showSaved();}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(sections));}catch(e){}
+  fetch(DB_URL+'/sections.json',{method:'PUT',body:JSON.stringify(sections)}).catch(()=>{});
+  showSaved();
+}
+function syncFromCloud(){
+  fetch(DB_URL+'/sections.json').then(r=>r.json()).then(remote=>{
+    if(remote){sections=remote;try{localStorage.setItem(KEY,JSON.stringify(sections));}catch(e){}render();}
+  }).catch(()=>{});
+}
 function showSaved(){
   const t=document.getElementById('toast');if(!t)return;
   t.classList.add('show');
@@ -216,7 +227,7 @@ function render(){
 
 }
 
-load();render();
+load();render();syncFromCloud();
 </script>
 </body>
 </html>
